@@ -1,0 +1,52 @@
+apiVersion: v1  
+kind: Service  
+metadata:  
+  name: streetcleanersv-microservice
+  labels:
+    app: streetcleanersv
+spec:  
+  ports:
+    - port: 8670
+      nodePort: 32170
+  selector:
+    app: streetcleanersv
+    tier: microservice
+  type: NodePort
+---
+
+---
+apiVersion: extensions/v1beta1  
+kind: Deployment  
+metadata:  
+  name: streetcleanersv-microservice
+  creationTimestamp: null
+  labels:
+     app: streetcleanersv
+spec:  
+  replicas: 1
+  strategy:
+    type: Recreate
+  template:
+    metadata:
+      creationTimestamp: null
+      labels:
+        app: streetcleanersv
+        tier: microservice
+        env: dev
+    spec:
+      containers:
+        - name: streetcleanersv
+          image: docker.wdf.sap.corp:51119/service/streetcleanersv:{{ base_url }}
+          imagePullPolicy: IfNotPresent
+          ports:
+          - containerPort: 8670
+          env:
+            - name: SERVER_PORT
+              value: "8610"
+          volumeMounts:
+            - mountPath: "/var/run/docker.sock"
+              name: dockersock
+      volumes:
+        - name: dockersock
+          hostPath:
+            path: "/var/run/docker.sock"
